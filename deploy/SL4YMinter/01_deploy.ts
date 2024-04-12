@@ -5,9 +5,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployer, proxyOwner, owner } = await hre.getNamedAccounts();
 
     // deploy a proxied contract
-    await hre.deployments.deploy('MyTokenUpgradeable', {
+    await hre.deployments.deploy('SL4YMinter', {
         from: deployer,
-        contract: 'MyTokenUpgradeable',
+        contract: 'SL4YMinter',
         log: true,
         proxy: {
             owner: proxyOwner,
@@ -15,7 +15,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             execute: {
                 init: {
                     methodName: 'initialize',
-                    args: [],
+                    args: [
+                        '0x0000000000000000000000000000456e65726779', // vtho
+                        '0x4b85757bcf693f742003f2d5529cdc1672392f16', // sl4yer token
+                        '0x3665eD160eDD2bC236fBDA83274eacA08769B0b9' // sl4yer wallet
+                    ],
                 }
             },
         },
@@ -24,13 +28,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     // read data from contract
-    const ugpraderRole = await hre.deployments.read('MyTokenUpgradeable', {}, 'UPGRADER_ROLE');
-    if (!(await hre.deployments.read('MyTokenUpgradeable', {}, 'hasRole', ugpraderRole, owner))) {
+    const ugpraderRole = await hre.deployments.read('SL4YMinter', {}, 'UPGRADER_ROLE');
+    if (!(await hre.deployments.read('SL4YMinter', {}, 'hasRole', ugpraderRole, owner))) {
 
         console.log('Granting owner UPGRADER_ROLE');
         // execute a function of the deployed contract
         await hre.deployments.execute(
-            'MyTokenUpgradeable',
+            'SL4YMinter',
             { from: deployer },
             'grantRole',
             ugpraderRole,
@@ -42,12 +46,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
     // access deployed address
-    const MyTokenUpgradeable = await hre.deployments.get('MyTokenUpgradeable');
-    console.log('MyTokenUpgradeable is available at', MyTokenUpgradeable.address)
+    const SL4YMinter = await hre.deployments.get('SL4YMinter');
+    console.log('SL4YMinter is available at', SL4YMinter.address)
 };
 
-func.id = 'mytoken-upgradeable'; // name your deployment
-func.tags = ['upgradeable']; // tag your deployment, to run certain tags only
-func.dependencies = ['regular']; // build a dependency tree based on tags, to run deployments in a certain order
+func.id = 'swap-upgradeable'; // name your deployment
+func.tags = ['swap', 'upgradeable']; // tag your deployment, to run certain tags only
+func.dependencies = []; // build a dependency tree based on tags, to run deployments in a certain order
 
 export default func;
