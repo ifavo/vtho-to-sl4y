@@ -24,6 +24,7 @@
     "hardhat": "^2.19.4",
     "hardhat-deploy": "npm:@vechain.energy/hardhat-deploy@latest",
     "hardhat-gas-reporter": "^1.0.8",
+    "nodemon": "^3.1.0",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typechain": "^8.1.0",
