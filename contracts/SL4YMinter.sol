@@ -7,14 +7,14 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol"; // Import ReentrancyGuard
 
 contract SL4YMinter is
     Initializable,
     AccessControlUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    ReentrancyGuardUpgradeable // Add ReentrancyGuard to the inheritance list
 {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -41,7 +41,7 @@ contract SL4YMinter is
         uint256 indexed SL4YAmount
     );
 
-    event SL4YMinted (
+    event SL4YMinted(
         address indexed minter,
         uint256 indexed VTHOAmount,
         uint256 indexed SL4YAmount
@@ -53,10 +53,7 @@ contract SL4YMinter is
         uint256 amount
     );
 
-    event VetClaimed(
-        address indexed claimer,
-        uint256 amount
-    );
+    event VetClaimed(address indexed claimer, uint256 amount);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -70,6 +67,7 @@ contract SL4YMinter is
     ) public initializer {
         __AccessControl_init();
         __UUPSUpgradeable_init();
+        __ReentrancyGuard_init(); // Initialize the ReentrancyGuard
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(UPGRADER_ROLE, msg.sender);
@@ -106,7 +104,7 @@ contract SL4YMinter is
         vault = _vault;
     }
 
-    function swapVTHOforSL4Y(uint256 _VTHOAmount) public {
+    function swapVTHOforSL4Y(uint256 _VTHOAmount) public nonReentrant {
         require(swapRates[_VTHOAmount] > 0, "Swap rate not defined");
         uint256 SL4YAmount = swapRates[_VTHOAmount];
 
@@ -115,7 +113,10 @@ contract SL4YMinter is
         emit SL4YMinted(msg.sender, _VTHOAmount, SL4YAmount);
     }
 
-    function claimToken(address _tokenAddress, uint256 _amount) public onlyRole(ADMIN_ROLE) {
+    function claimToken(
+        address _tokenAddress,
+        uint256 _amount
+    ) public onlyRole(ADMIN_ROLE) {
         IERC20Upgradeable(_tokenAddress).safeTransfer(msg.sender, _amount);
         emit TokenClaimed(_tokenAddress, msg.sender, _amount);
     }
@@ -148,6 +149,4 @@ contract SL4YMinter is
     ) internal override(AccessControlUpgradeable) {
         super._revokeRole(role, account);
     }
-
-    receive() external payable {}
 }
