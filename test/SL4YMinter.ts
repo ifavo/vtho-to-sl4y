@@ -187,7 +187,7 @@ describe("SL4YMinter", function () {
         });
     });
 
-    describe.skip("claimVet(_amount)", function () {
+    describe("claimVet(_amount)", function () {
         it("should allow admin to claim specified VET amount", async function () {
             const { slayMinter, owner } = await loadFixture(deployFixture);
             const claimAmount = ethers.parseEther("1");

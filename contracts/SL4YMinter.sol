@@ -149,4 +149,6 @@ contract SL4YMinter is
     ) internal override(AccessControlUpgradeable) {
         super._revokeRole(role, account);
     }
+
+    receive() external payable {}
 }
