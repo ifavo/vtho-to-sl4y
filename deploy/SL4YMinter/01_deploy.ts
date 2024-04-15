@@ -2,7 +2,9 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const { deployer, proxyOwner, owner } = await hre.getNamedAccounts();
+    const { deployer, proxyOwner } = await hre.getNamedAccounts();
+
+    console.log('Deploying SL4YMinter from', deployer)
 
     // deploy a proxied contract
     await hre.deployments.deploy('SL4YMinter', {
@@ -26,24 +28,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         libraries: {
         },
     });
-
-    // read data from contract
-    const ugpraderRole = await hre.deployments.read('SL4YMinter', {}, 'UPGRADER_ROLE');
-    if (!(await hre.deployments.read('SL4YMinter', {}, 'hasRole', ugpraderRole, owner))) {
-
-        console.log('Granting owner UPGRADER_ROLE');
-        // execute a function of the deployed contract
-        await hre.deployments.execute(
-            'SL4YMinter',
-            { from: deployer },
-            'grantRole',
-            ugpraderRole,
-            owner
-        );
-    }
-    else {
-        console.log('Owner already has UPGRADER_ROLE');
-    }
 
     // access deployed address
     const SL4YMinter = await hre.deployments.get('SL4YMinter');
